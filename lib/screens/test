@@ -1,0 +1,168 @@
+import 'dart:math';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:chat_app_office/constants.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class ChatScreen extends StatefulWidget {
+  static const String id = 'chat_screen';
+  @override
+  _ChatScreenState createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
+  final _auth = FirebaseAuth.instance;
+  final _firestore =
+      FirebaseFirestore.instance; // Firestore.instance doesn't work
+  /// in trouble
+  late User loggedInUser;
+  String messageText = '';
+  Stream collectionStream =
+      FirebaseFirestore.instance.collection('users').snapshots();
+  Stream documentStream =
+      FirebaseFirestore.instance.collection('users').doc('ABC123').snapshots();
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getCurrentUser();
+  }
+
+  void getCurrentUser() async {
+    /// This line is from Angela Yu course,
+    /// but this line doesn't work
+    //final user = await _auth.currentUser();
+    /// the following line is from
+    /// https://firebase.flutter.dev/docs/auth/manage-users
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        loggedInUser = user;
+        print(loggedInUser.email);
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  /// 1 May 2023
+  // void getMessages() async {
+  //   final messages = await _firestore.collection('messages').get();  //Instance of '_JsonQuerySnapshot'
+  //   for (var message in messages.docs) {
+  //     var messageData = message.data();
+  //     var messageSender = messageData['sender'];
+  //     var messageText = messageData['text'];
+  //     print(messageData);
+  //     print("$messageSender | ======> $messageText");
+  //   }
+  // }
+
+  // void messagesStream() async {
+  //   await for (var snapshot in _firestore.collection('messages').snapshots()) {
+  //     for (var message in snapshot.docs) {
+  //       var messageData = message.data();
+  //       var messageSender = messageData['sender'];
+  //       var messageText = messageData['text'];
+  //       //print(messageData);
+  //       //print("$messageSender | ======> $messageText");
+  //     }
+  //   }
+  // }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: null,
+        actions: <Widget>[
+          IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () {
+                //getMessages();
+                //messagesStream();
+              }),
+        ],
+        title: const Text(
+          '⚡️Chat',
+          style: TextStyle(
+            fontSize: 20,
+          ),
+        ),
+        backgroundColor: Colors.lightBlueAccent,
+      ),
+      body: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            StreamBuilder<QuerySnapshot>(
+              stream:
+                  FirebaseFirestore.instance.collection('messages').snapshots(),
+              builder: (context, snapshot) {
+                List<Column> messageWidgets = [];
+
+                if (snapshot.hasData) {
+                  final messages = snapshot.data?.docs.toList();
+
+                  for (var message in messages!) {
+                    final messageWidget = Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        //Text('This is inside Column'),
+                        Text(
+                          '${message['sender']} says:  ${message['text']}',
+                          style: TextStyle(
+                            fontSize: 20.0,
+                          ),
+                        ),
+                      ],
+                    );
+                    messageWidgets.add(messageWidget);
+                  }
+                }
+                return Expanded(
+                  child: ListView(
+                    children: messageWidgets,
+                  ),
+                );
+              },
+            ),
+            Container(
+              decoration: kMessageContainerDecoration,
+              child: Row(
+                children: [
+                  /// Text Field to add Chat Message
+                  Expanded(
+                    child: TextField(
+                      onChanged: (value) {
+                        messageText = value;
+                      },
+                      decoration: kMessageTextFieldDecoration,
+                    ),
+                  ),
+
+                  /// The send Button
+                  TextButton(
+                    onPressed: () {
+                      //we have messageText + loggedInUser.email
+                      print('Send button pressed');
+                      _firestore.collection('messages').add(
+                          {'text': messageText, 'sender': loggedInUser.email});
+                      print('${loggedInUser.email} is logged in');
+                    },
+                    child: Text(
+                      'Send',
+                      style: kSendButtonTextStyle,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}

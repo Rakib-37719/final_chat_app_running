@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="default_web_client_id" translatable="false">394230012746-s03jkppve9ev8rgahkh69iadmlucdsej.apps.googleusercontent.com</string>
+    <string name="gcm_defaultSenderId" translatable="false">394230012746</string>
+    <string name="google_api_key" translatable="false">AIzaSyAgVXzhPcA-WLaFQjEqa70qNLHAXmM3DWw</string>
+    <string name="google_app_id" translatable="false">1:394230012746:android:1acd4d27af125a2f68ffb3</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyAgVXzhPcA-WLaFQjEqa70qNLHAXmM3DWw</string>
+    <string name="google_storage_bucket" translatable="false">flash-chat-5bf67.appspot.com</string>
+    <string name="project_id" translatable="false">flash-chat-5bf67</string>
+</resources>
